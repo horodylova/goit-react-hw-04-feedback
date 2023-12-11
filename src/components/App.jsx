@@ -1,76 +1,70 @@
-import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
-
 import { FcFeedback } from "react-icons/fc";
 import Section from './Section/Section';
 import FeedbackOptions from './FeedbackOptions/FeedbackOptions';
 import StatisticsComponent from './Statistics/StatisticsComponent';
 import { Notification } from "./Notification.styled";
 
-class App extends React.Component {
-  static propTypes = {
-    good: PropTypes.number,
-    neutral: PropTypes.number,
-    bad: PropTypes.number,
-  };
-
-  state = {
+const App = () => {
+  const [feedback, setFeedback] = useState({
     good: 0,
     neutral: 0,
     bad: 0,
-  };
-
-  handleButtonClick = (feedbackType) => {
-    this.setState((prevState) => {
-      return {
-        [feedbackType]: prevState[feedbackType] + 1,
-      };
   });
+
+  const handleButtonClick = (feedbackType) => {
+    setFeedback((prevFeedback) => ({
+      ...prevFeedback,
+      [feedbackType]: prevFeedback[feedbackType] + 1,
+    }));
   };
 
-  countTotalFeedback = () => {
-    return this.state.good + this.state.neutral + this.state.bad;
+  const countTotalFeedback = () => {
+    return feedback.good + feedback.neutral + feedback.bad;
   };
 
-  countPositiveFeedbackPercentage = () => {
-    const totalFeedback = this.countTotalFeedback();
+  const countPositiveFeedbackPercentage = () => {
+    const totalFeedback = countTotalFeedback();
     return totalFeedback > 0
-      ? Math.round((this.state.good / totalFeedback) * 100)
+      ? Math.round((feedback.good / totalFeedback) * 100)
       : 0;
   };
 
-  render() {
-    const totalFeedback = this.countTotalFeedback();
+  const totalFeedbackValue = countTotalFeedback();
 
-      return (
-        <>
+  return (
+    <>
+      <Section title="Please leave feedback">
+        <FcFeedback />
+        <FeedbackOptions
+          options={Object.keys(feedback)}
+          onLeaveFeedback={handleButtonClick}
+        />
+      </Section>
 
-          <Section title="Please leave feedback">
-          <FcFeedback />
-          <FeedbackOptions
-           options={Object.keys(this.state)}
-            onLeaveFeedback={this.handleButtonClick}
+      {totalFeedbackValue > 0 ? (
+        <Section title="Statistics">
+          <StatisticsComponent
+            good={feedback.good}
+            neutral={feedback.neutral}
+            bad={feedback.bad}
+            totalFeedback={totalFeedbackValue}
+            positiveFeedbackPercentage={countPositiveFeedbackPercentage()}
           />
         </Section>
+      ) : (
+        <Notification>No feedback given</Notification>
+      )}
+    </>
+  );
+};
 
-        {totalFeedback > 0 ? (
-          <Section title="Statistics">
-            <StatisticsComponent
-            good={this.state.good}
-            neutral={this.state.neutral}
-            bad={this.state.bad}
-            totalFeedback={this.countTotalFeedback()}
-            positiveFeedbackPercentage={this.countPositiveFeedbackPercentage()}
-          />
-          </Section>
-        ) : (
-          <Notification>No feedback given</Notification>
-        )}
-              </>
-
-      );
-    }
-  }
+App.propTypes = {
+  good: PropTypes.number,
+  neutral: PropTypes.number,
+  bad: PropTypes.number,
+};
 
 export default App;
 
